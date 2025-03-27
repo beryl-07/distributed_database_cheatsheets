@@ -7,56 +7,34 @@
 ## Regular Views
 
 ```sql
--- Create a simple view
+-- Crée une vue simple
 CREATE VIEW active_customers AS
 SELECT * FROM customers 
 WHERE status = 'active';
 
--- Using the view
+-- Utilisation de la vue
 SELECT * FROM active_customers;
 ```
 
 ## Materialized Views
 
 ```sql
--- Create materialized view
+-- Création d'une vue materialisée
 CREATE MATERIALIZED VIEW monthly_sales AS
-SELECT 
-    date_trunc('month', sale_date) AS month,
-    SUM(amount) as total_sales
-FROM sales
-GROUP BY 1
-WITH DATA;
+SELECT * FROM customers 
+WHERE status != 'active';
 
 -- Refresh materialized view
 REFRESH MATERIALIZED VIEW monthly_sales;
 ```
 
-## Materialized Views with Indexes
-```sql
--- Create materialized view with indexes
-CREATE MATERIALIZED VIEW monthly_sales AS
-SELECT 
-    date_trunc('month', sale_date) AS month,
-    SUM(amount) as total_sales
-FROM sales
-GROUP BY 1
-WITH DATA;
-
--- Add indexes to improve refresh performance
-CREATE INDEX idx_monthly_sales_month ON monthly_sales(month);
-
--- Concurrent refresh (requires at least one unique index)
-REFRESH MATERIALIZED VIEW CONCURRENTLY monthly_sales;
-```
-
 ## DBLink Views
 
 ```sql
--- Install dblink extension
+-- Install dblink extension (requires superuser)
 CREATE EXTENSION dblink;
 
--- Create view using remote data
+-- Crée view à pqrtir de données distantes
 CREATE VIEW remote_products AS
 SELECT *
 FROM dblink('host=remote_server port=5432 dbname=remote_db user=remote_user password=remote_pass',
@@ -66,13 +44,19 @@ AS remote_products(id INT, name VARCHAR, price DECIMAL);
 
 ## Remote Views Management
 ```sql
--- Create extension (requires superuser)
+-- Crée l'extension (requires superuser)
 CREATE EXTENSION IF NOT EXISTS dblink;
 
--- Create user mapping for dblink
-CREATE USER MAPPING FOR CURRENT_USER
-SERVER remote_server
-OPTIONS (user 'remote_user', password 'remote_pass');
+-- Crée une vue à partir de données distantes
+CREATE OR REPLACE VIEW remote_products
+AS
+SELECT * FROM dblink('host=remote_server port=5432 dbname=remote_db user=remote_user password=remote_pass',
+    'SELECT * FROM products')
+AS remote_products(id INT, name VARCHAR, price DECIMAL);
+
+-- DBLink_Execute pour executer une requête
+SELECT * FROM dblink_exec('host=remote_server port=5432 dbname=remote_db user=remote_user password=remote_pass',
+    'SELECT * FROM products');
 
 -- Monitor view status
 SELECT schemaname, viewname, definition 
