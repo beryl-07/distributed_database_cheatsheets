@@ -115,6 +115,29 @@ CREATE TRIGGER insert_orders_trigger
     BEFORE INSERT ON orders
     FOR EACH ROW EXECUTE FUNCTION orders_insert_trigger();
 ```
+
+
+## Hash Partitioning
+
+```sql
+-- Create hash partitioned table
+CREATE TABLE orders (
+    order_id INT,
+    customer_id INT,
+    order_date DATE
+) PARTITION BY HASH (customer_id);
+
+-- Create partitions
+CREATE TABLE orders_0 PARTITION OF orders 
+    FOR VALUES WITH (modulus 4, remainder 0);
+CREATE TABLE orders_1 PARTITION OF orders 
+    FOR VALUES WITH (modulus 4, remainder 1);
+CREATE TABLE orders_2 PARTITION OF orders 
+    FOR VALUES WITH (modulus 4, remainder 2);
+CREATE TABLE orders_3 PARTITION OF orders 
+    FOR VALUES WITH (modulus 4, remainder 3);
+```
+
 <!-- 
 ## List Partitioning
 ```sql

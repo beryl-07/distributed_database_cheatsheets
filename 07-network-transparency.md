@@ -29,7 +29,7 @@ CREATE RULE products_insert_remote AS
     INSERT INTO products_remote VALUES (NEW.*);
 ```
 
-## Replication Setup
+<!-- ## Replication Setup
 ```sql
 -- On primary server
 ALTER SYSTEM SET wal_level = replica;
@@ -45,4 +45,4 @@ restore_command = 'cp /var/lib/postgresql/archive/%f %p'
 
 -- Monitor replication
 SELECT * FROM pg_stat_replication;
-```
+``` -->
