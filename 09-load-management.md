@@ -55,3 +55,25 @@ CREATE TABLE orders_2 PARTITION OF orders
 CREATE TABLE orders_3 PARTITION OF orders 
     FOR VALUES WITH (modulus 4, remainder 3);
 ```
+
+## Monitoring and Failover
+```sql
+-- PgPool-II watchdog configuration
+# In pgpool.conf
+use_watchdog = on
+wd_hostname = 'pool_node1'
+delegate_IP = '10.0.0.100'
+heartbeat_destination0 = 'pool_node2'
+heartbeat_destination_port0 = 9694
+
+-- Monitor PgPool-II status
+show pool_nodes;
+show pool_processes;
+show pool_status;
+
+-- Monitor PgBouncer
+SHOW POOLS;
+SHOW CLIENTS;
+SHOW SERVERS;
+SHOW STATS;
+```

@@ -1,5 +1,10 @@
 # Foreign Data Wrappers (FDW)
 
+## Prerequisites
+- Superuser privileges for extension installation
+- Network access between servers
+- Foreign server credentials
+
 ## Setting up postgres_fdw
 
 ```sql
@@ -36,4 +41,25 @@ SELECT * FROM foreign_products;
 SELECT l.order_id, f.name, f.price
 FROM local_orders l
 JOIN foreign_products f ON l.product_id = f.id;
+```
+
+## Monitoring and Troubleshooting
+```sql
+-- Check FDW status
+SELECT * FROM pg_foreign_server;
+SELECT * FROM pg_user_mappings;
+
+-- Monitor FDW performance
+SELECT * FROM pg_stat_foreign_tables;
+
+-- Common settings for performance
+ALTER SERVER foreign_server
+OPTIONS (
+    fetch_size '1000',
+    use_remote_estimate 'true'
+);
+
+-- Explain foreign queries
+EXPLAIN (VERBOSE, COSTS)
+SELECT * FROM foreign_products;
 ```

@@ -1,5 +1,9 @@
 # Table Partitioning
 
+## Prerequisites
+- PostgreSQL 12+ for declarative partitioning
+- Superuser or table owner privileges
+
 ## Creating Partitioned Tables
 
 ```sql
@@ -34,4 +38,32 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER insert_orders_trigger
     BEFORE INSERT ON orders
     FOR EACH ROW EXECUTE FUNCTION orders_insert_trigger();
+```
+
+## List Partitioning
+```sql
+CREATE TABLE products (
+    product_id SERIAL,
+    category VARCHAR(50),
+    name VARCHAR(100)
+) PARTITION BY LIST (category);
+
+CREATE TABLE products_electronics PARTITION OF products 
+    FOR VALUES IN ('electronics');
+CREATE TABLE products_clothing PARTITION OF products 
+    FOR VALUES IN ('clothing');
+```
+
+## Partition Management
+```sql
+-- Monitor partition usage
+SELECT schemaname, tablename, partition_strategy, partition_expression
+FROM pg_partitioned_table pt
+JOIN pg_class c ON pt.partrelid = c.oid
+JOIN pg_namespace n ON c.relnamespace = n.oid;
+
+-- Detach/Attach partitions
+ALTER TABLE orders DETACH PARTITION orders_2023;
+ALTER TABLE orders ATTACH PARTITION orders_2023
+    FOR VALUES FROM ('2023-01-01') TO ('2024-01-01');
 ```

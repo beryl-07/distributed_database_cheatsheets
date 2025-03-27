@@ -36,3 +36,28 @@ SELECT schemaname, relname, indexrelname, idx_scan,
        idx_tup_read, idx_tup_fetch
 FROM pg_stat_user_indexes;
 ```
+
+## Extended Monitoring
+```sql
+-- Monitor active queries
+SELECT pid, query, state, wait_event, wait_event_type
+FROM pg_stat_activity
+WHERE state != 'idle';
+
+-- Find slow queries
+SELECT calls, total_exec_time/calls as avg_time, query
+FROM pg_stat_statements
+ORDER BY total_exec_time DESC
+LIMIT 10;
+
+-- Connection pooling metrics
+SELECT * FROM pg_stat_database;
+
+-- Index efficiency
+SELECT schemaname, tablename, indexrelname,
+       idx_scan, idx_tup_read,
+       idx_tup_fetch
+FROM pg_stat_all_indexes
+WHERE idx_scan = 0
+AND schemaname NOT IN ('pg_catalog', 'pg_toast');
+```
