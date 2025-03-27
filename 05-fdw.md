@@ -43,22 +43,9 @@ FROM local_orders l
 JOIN foreign_products f ON l.product_id = f.id;
 ```
 
-## Monitoring and Troubleshooting
+## Monitoring
+
 ```sql
--- Check FDW status
-SELECT * FROM pg_foreign_server;
-SELECT * FROM pg_user_mappings;
-
--- Monitor FDW performance
-SELECT * FROM pg_stat_foreign_tables;
-
--- Common settings for performance
-ALTER SERVER foreign_server
-OPTIONS (
-    fetch_size '1000',
-    use_remote_estimate 'true'
-);
-
 -- Explain foreign queries
 EXPLAIN (VERBOSE, COSTS)
 SELECT * FROM foreign_products;
