@@ -12,12 +12,17 @@
 listen_addresses = '*'
 
 # Edit pg_hba.conf
-host    all    all    0.0.0.0/0    md5
+# TYPE  DATABASE        USER            ADDRESS               METHOD
+host    all             app_user        samenet               md5
+host    all             app_user        192.168.1.0/24        md5
 ```
 
 ## Connecting to Remote Database
 
 ```sql
+-- AS superuser
+CREATE EXTENSION postgres_fdw;
+
 -- Create connection as foreign server
 CREATE SERVER remote_server
 FOREIGN DATA WRAPPER postgres_fdw
