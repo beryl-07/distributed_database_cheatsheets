@@ -1,27 +1,27 @@
 # Foreign Data Wrappers (FDW)
 
-## Prerequisites
-- Superuser privileges for extension installation
-- Network access between servers
-- Foreign server credentials
+## Prérequis
+- Privilèges superutilisateur pour l'installation des extensions
+- Accès réseau entre les serveurs
+- Identifiants du serveur distant
 
-## Setting up postgres_fdw
+## Configuration de postgres_fdw
 
 ```sql
--- Create the extension
+-- Créer l'extension
 CREATE EXTENSION postgres_fdw;
 
--- Create the foreign server
+-- Créer le serveur distant
 CREATE SERVER foreign_server
 FOREIGN DATA WRAPPER postgres_fdw
 OPTIONS (host 'remote_host', port '5432', dbname 'remote_db');
 
--- Create user mapping
+-- Créer le mapping utilisateur
 CREATE USER MAPPING FOR local_user
 SERVER foreign_server
 OPTIONS (user 'remote_user', password 'remote_pass');
 
--- Create foreign table
+-- Créer la table distante
 CREATE FOREIGN TABLE foreign_products (
     id integer,
     name varchar(100),
@@ -31,22 +31,22 @@ SERVER foreign_server
 OPTIONS (schema_name 'public', table_name 'products');
 ```
 
-## Query Foreign Tables
+## Interroger les Tables Distantes
 
 ```sql
--- Query foreign table like a local table
+-- Interroger la table distante comme une table locale
 SELECT * FROM foreign_products;
 
--- Join with local tables
+-- Joindre avec des tables locales
 SELECT l.order_id, f.name, f.price
 FROM local_orders l
 JOIN foreign_products f ON l.product_id = f.id;
 ```
 
-## Monitoring
+## Surveillance
 
 ```sql
--- Explain foreign queries
+-- Expliquer les requêtes distantes
 EXPLAIN (VERBOSE, COSTS)
 SELECT * FROM foreign_products;
 ```

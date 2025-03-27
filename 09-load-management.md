@@ -1,6 +1,6 @@
-# Load Management with PgBouncer and PgPool-II
+# Gestion de Charge avec PgBouncer et PgPool-II
 
-## PgBouncer Configuration
+## Configuration PgBouncer
 
 ```ini
 [databases]
@@ -16,7 +16,7 @@ max_client_conn = 1000
 default_pool_size = 20
 ```
 
-## PgPool-II Setup
+## Configuration PgPool-II
 
 ```ini
 # pgpool.conf
@@ -35,22 +35,22 @@ master_slave_mode = on
 master_slave_sub_mode = 'stream'
 ```
 
-## Monitoring and Failover
+## Surveillance et Basculement
 ```sql
--- PgPool-II watchdog configuration
-# In pgpool.conf
+-- Configuration watchdog PgPool-II
+# Dans pgpool.conf
 use_watchdog = on
 wd_hostname = 'pool_node1'
 delegate_IP = '10.0.0.100'
 heartbeat_destination0 = 'pool_node2'
 heartbeat_destination_port0 = 9694
 
--- Monitor PgPool-II status
+-- Surveiller l'état de PgPool-II
 show pool_nodes;
 show pool_processes;
 show pool_status;
 
--- Monitor PgBouncer
+-- Surveiller PgBouncer
 SHOW POOLS;
 SHOW CLIENTS;
 SHOW SERVERS;

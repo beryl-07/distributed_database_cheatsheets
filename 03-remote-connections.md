@@ -1,44 +1,44 @@
-# Remote Database Connections
+# Connexions aux Bases de Données Distantes
 
-## Prerequisites
-- Superuser access on both source and target servers
-- PostgreSQL 12+ installed
-- Firewall configured to allow PostgreSQL traffic (default port 5432)
+## Prérequis
+- Accès superutilisateur sur les serveurs source et cible
+- PostgreSQL 12+ installé
+- Pare-feu configuré pour autoriser le trafic PostgreSQL (port 5432 par défaut)
 
-## Configure PostgreSQL for Remote Access
+## Configurer PostgreSQL pour l'accès distant
 
 ```bash
-# Edit postgresql.conf
+# Modifier postgresql.conf
 listen_addresses = '*'
 
-# Edit pg_hba.conf
-# TYPE  DATABASE        USER            ADDRESS               METHOD
-host    all             app_user        samenet               md5
-host    all             app_user        192.168.1.0/24        md5
+# Modifier pg_hba.conf
+# TYPE  BASE DE DONNÉES   UTILISATEUR     ADRESSE              MÉTHODE
+host    all              app_user        samenet               md5
+host    all              app_user        192.168.1.0/24        md5
 ```
 
-## Connecting to Remote Database
+## Connexion à une Base de Données Distante
 
 ```sql
--- AS superuser
+-- En tant que superutilisateur
 CREATE EXTENSION postgres_fdw;
 
--- Create connection as foreign server
+-- Créer la connexion comme serveur distant
 CREATE SERVER remote_server
 FOREIGN DATA WRAPPER postgres_fdw
 OPTIONS (host 'remote_host', port '5432', dbname 'remote_db');
 
--- Create user mapping
+-- Créer le mapping utilisateur
 CREATE USER MAPPING FOR local_user
 SERVER remote_server
 OPTIONS (user 'remote_user', password 'remote_password');
 ```
 
-## Testing Connections
+## Test des Connexions
 ```bash
-# Test connection using psql
+# Tester la connexion avec psql
 psql "postgresql://user:password@remote_host:5432/dbname"
 
-# Test using pg_isready
+# Tester avec pg_isready
 pg_isready -h remote_host -p 5432
 ```

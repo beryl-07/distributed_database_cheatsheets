@@ -1,9 +1,9 @@
-# Network Transparency with Inheritance
+# Transparence Réseau avec l'Héritage
 
-## Setting up Table Inheritance
+## Configuration de l'Héritage des Tables
 
 ```sql
--- Create parent table
+-- Créer la table parent
 CREATE TABLE products (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100),
@@ -11,11 +11,11 @@ CREATE TABLE products (
     location VARCHAR(50)
 );
 
--- Create child tables
+-- Créer les tables enfants
 CREATE TABLE products_local () INHERITS (products);
 CREATE TABLE products_remote () INHERITS (products);
 
--- Create routing rules
+-- Créer les règles de routage
 CREATE RULE products_insert_local AS
     ON INSERT TO products
     WHERE (location = 'local')

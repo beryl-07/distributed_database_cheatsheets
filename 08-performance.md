@@ -1,15 +1,15 @@
-# Performance Testing with pgbench
+# Tests de Performance avec pgbench
 
-## Setting up pgbench
+## Configuration de pgbench
 
 ```sql
--- Initialize pgbench tables
-pgbench -i -s 10 your_database_name
+-- Initialiser les tables pgbench
+pgbench -i -s 10 nom_de_votre_base
 
--- Basic benchmark test
-pgbench -c 10 -j 2 -t 1000 your_database_name
+-- Test de benchmark basique
+pgbench -c 10 -j 2 -t 1000 nom_de_votre_base
 
--- Custom benchmark script
+-- Script de benchmark personnalisé
 CREATE TABLE test_table (
     id SERIAL PRIMARY KEY,
     data TEXT
@@ -23,37 +23,37 @@ SELECT abalance FROM pgbench_accounts WHERE aid = :aid;
 COMMIT;
 ```
 
-## Analyzing Results
+## Analyse des Résultats
 
 ```sql
--- Check table statistics
+-- Vérifier les statistiques des tables
 SELECT schemaname, relname, seq_scan, seq_tup_read, 
        idx_scan, idx_tup_fetch
 FROM pg_stat_user_tables;
 
--- Check index usage
+-- Vérifier l'utilisation des index
 SELECT schemaname, relname, indexrelname, idx_scan, 
        idx_tup_read, idx_tup_fetch
 FROM pg_stat_user_indexes;
 ```
 
-## Extended Monitoring
+## Surveillance Étendue
 ```sql
--- Monitor active queries
+-- Surveiller les requêtes actives
 SELECT pid, query, state, wait_event, wait_event_type
 FROM pg_stat_activity
 WHERE state != 'idle';
 
--- Find slow queries
+-- Trouver les requêtes lentes
 SELECT calls, total_exec_time/calls as avg_time, query
 FROM pg_stat_statements
 ORDER BY total_exec_time DESC
 LIMIT 10;
 
--- Connection pooling metrics
+-- Métriques de pooling de connexions
 SELECT * FROM pg_stat_database;
 
--- Index efficiency
+-- Efficacité des index
 SELECT schemaname, tablename, indexrelname,
        idx_scan, idx_tup_read,
        idx_tup_fetch
