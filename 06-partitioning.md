@@ -6,6 +6,82 @@
 
 ## Creating Partitioned Tables
 
+### Range Partitioning
+
+```sql
+
+-- Create master partitioned table
+CREATE TABLE IF NOT EXISTS master_vehicles (
+    id SERIAL PRIMARY KEY,
+    brand VARCHAR(255) NOT NULL,
+    immatriculation VARCHAR(255) NOT NULL,
+    user_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create child tables
+
+CREATE TABLE IF NOT EXISTS slave1_vehicles (check (user_id < 125000)) INHERITS (master_vehicles);
+CREATE TABLE IF NOT EXISTS slave2_vehicles (check ((user_id >= 125000) AND (user_id < 250000))) INHERITS (master_vehicles);
+
+-- Create triggers for automatic routing
+CREATE OR REPLACE FUNCTION insert_vehicle()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (NEW.user_id < 125000) THEN
+        INSERT INTO slave1_vehicles (brand, immatriculation, user_id) VALUES (NEW.brand, NEW.immatriculation, NEW.user_id);
+    ELSIF ((NEW.user_id >= 125000) AND (NEW.user_id < 250000)) THEN
+        INSERT INTO slave2_vehicles (brand, immatriculation, user_id) VALUES (NEW.brand, NEW.immatriculation, NEW.user_id);
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER insert_vehicle_trigger
+    BEFORE INSERT ON master_vehicles
+    FOR EACH ROW
+    EXECUTE PROCEDURE insert_vehicle();
+
+CREATE OR REPLACE FUNCTION update_vehicle()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (NEW.user_id < 125000) THEN
+        UPDATE slave1_vehicles SET brand = NEW.brand, immatriculation = NEW.immatriculation, user_id = NEW.user_id WHERE id = NEW.id;
+    ELSIF ((NEW.user_id >= 125000) AND (NEW.user_id < 250000)) THEN
+        UPDATE slave2_vehicles SET brand = NEW.brand, immatriculation = NEW.immatriculation, user_id = NEW.user_id WHERE id = NEW.id;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_vehicle_trigger
+    BEFORE UPDATE ON master_vehicles
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_vehicle();
+
+CREATE OR REPLACE FUNCTION delete_vehicle()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (OLD.user_id < 125000) THEN
+        DELETE FROM slave1_vehicles WHERE id = OLD.id;
+    ELSIF ((OLD.user_id >= 125000) AND (OLD.user_id < 250000)) THEN
+        DELETE FROM slave2_vehicles WHERE id = OLD.id;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER delete_vehicle_trigger
+    BEFORE DELETE ON master_vehicles
+    FOR EACH ROW
+    EXECUTE PROCEDURE delete_vehicle();
+```
+
+OR
+
+
 ```sql
 -- Create master partitioned table
 CREATE TABLE orders (
@@ -39,7 +115,7 @@ CREATE TRIGGER insert_orders_trigger
     BEFORE INSERT ON orders
     FOR EACH ROW EXECUTE FUNCTION orders_insert_trigger();
 ```
-
+<!-- 
 ## List Partitioning
 ```sql
 CREATE TABLE products (
@@ -52,9 +128,9 @@ CREATE TABLE products_electronics PARTITION OF products
     FOR VALUES IN ('electronics');
 CREATE TABLE products_clothing PARTITION OF products 
     FOR VALUES IN ('clothing');
-```
+``` -->
 
-## Partition Management
+<!-- ## Partition Management
 ```sql
 -- Monitor partition usage
 SELECT schemaname, tablename, partition_strategy, partition_expression
@@ -66,4 +142,4 @@ JOIN pg_namespace n ON c.relnamespace = n.oid;
 ALTER TABLE orders DETACH PARTITION orders_2023;
 ALTER TABLE orders ATTACH PARTITION orders_2023
     FOR VALUES FROM ('2023-01-01') TO ('2024-01-01');
-```
+``` -->
